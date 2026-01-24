@@ -1,0 +1,18 @@
+[project]
+name = "ba-manual-mcp-server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.25.0",
+    "python_dateutil>=2.8.2",
+    "httpx>=0.28.1",
+    "pydantic>=2",
+    "typing-extensions>=4.7.1"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
