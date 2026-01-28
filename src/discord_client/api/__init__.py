@@ -1,5 +1,5 @@
 # flake8: noqa
 
 # import apis into api package
-from src.discord_client.api.default_api import DefaultApi
+from discord_client.api.default_api import DefaultApi
 

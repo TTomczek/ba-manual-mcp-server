@@ -60,32 +60,14 @@ class ListChannelInvites200ResponseInner(BaseModel):
         if v is None:
             return v
 
-        instance = ListChannelInvites200ResponseInner.model_construct()
-        error_messages = []
-        match = 0
-        # validate data type: FriendInviteResponse
-        if not isinstance(v, FriendInviteResponse):
-            error_messages.append(f"Error! Input type `{type(v)}` is not `FriendInviteResponse`")
-        else:
-            match += 1
-        # validate data type: GroupDMInviteResponse
-        if not isinstance(v, GroupDMInviteResponse):
-            error_messages.append(f"Error! Input type `{type(v)}` is not `GroupDMInviteResponse`")
-        else:
-            match += 1
-        # validate data type: GuildInviteResponse
-        if not isinstance(v, GuildInviteResponse):
-            error_messages.append(f"Error! Input type `{type(v)}` is not `GuildInviteResponse`")
-        else:
-            match += 1
-        if match > 1:
-            # more than 1 match
-            raise ValueError("Multiple matches found when setting `actual_instance` in ListChannelInvites200ResponseInner with oneOf schemas: FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse. Details: " + ", ".join(error_messages))
-        elif match == 0:
-            # no match
-            raise ValueError("No match found when setting `actual_instance` in ListChannelInvites200ResponseInner with oneOf schemas: FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse. Details: " + ", ".join(error_messages))
-        else:
+        # Check if v is one of the valid types - accept any valid type
+        if isinstance(v, (FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse)):
             return v
+
+        # If none of the types match, provide detailed error
+        error_messages = []
+        error_messages.append(f"Error! Input type `{type(v)}` is not one of: FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse")
+        raise ValueError("No match found when setting `actual_instance` in ListChannelInvites200ResponseInner with oneOf schemas: FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse. Details: " + ", ".join(error_messages))
 
     @classmethod
     def from_dict(cls, obj: Union[str, Dict[str, Any]]) -> Self:
@@ -99,35 +81,34 @@ class ListChannelInvites200ResponseInner(BaseModel):
             return instance
 
         error_messages = []
-        match = 0
+        successful_instance = None
+
+        # Try GuildInviteResponse first (most common for guild invites)
+        try:
+            successful_instance = GuildInviteResponse.from_json(json_str)
+            instance.actual_instance = successful_instance
+            return instance
+        except (ValidationError, ValueError) as e:
+            error_messages.append(f"GuildInviteResponse: {str(e)}")
 
         # deserialize data into FriendInviteResponse
         try:
-            instance.actual_instance = FriendInviteResponse.from_json(json_str)
-            match += 1
+            successful_instance = FriendInviteResponse.from_json(json_str)
+            instance.actual_instance = successful_instance
+            return instance
         except (ValidationError, ValueError) as e:
-            error_messages.append(str(e))
+            error_messages.append(f"FriendInviteResponse: {str(e)}")
+
         # deserialize data into GroupDMInviteResponse
         try:
-            instance.actual_instance = GroupDMInviteResponse.from_json(json_str)
-            match += 1
-        except (ValidationError, ValueError) as e:
-            error_messages.append(str(e))
-        # deserialize data into GuildInviteResponse
-        try:
-            instance.actual_instance = GuildInviteResponse.from_json(json_str)
-            match += 1
-        except (ValidationError, ValueError) as e:
-            error_messages.append(str(e))
-
-        if match > 1:
-            # more than 1 match
-            raise ValueError("Multiple matches found when deserializing the JSON string into ListChannelInvites200ResponseInner with oneOf schemas: FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse. Details: " + ", ".join(error_messages))
-        elif match == 0:
-            # no match
-            raise ValueError("No match found when deserializing the JSON string into ListChannelInvites200ResponseInner with oneOf schemas: FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse. Details: " + ", ".join(error_messages))
-        else:
+            successful_instance = GroupDMInviteResponse.from_json(json_str)
+            instance.actual_instance = successful_instance
             return instance
+        except (ValidationError, ValueError) as e:
+            error_messages.append(f"GroupDMInviteResponse: {str(e)}")
+
+        # no match found
+        raise ValueError("No match found when deserializing the JSON string into ListChannelInvites200ResponseInner with oneOf schemas: FriendInviteResponse, GroupDMInviteResponse, GuildInviteResponse. Details: " + ", ".join(error_messages))
 
     def to_json(self) -> str:
         """Returns the JSON representation of the actual instance"""

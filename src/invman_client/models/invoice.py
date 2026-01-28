@@ -17,8 +17,8 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import date
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
+from datetime import date, datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -112,5 +112,29 @@ class Invoice(BaseModel):
             "file": obj.get("file")
         })
         return _obj
+
+    @field_validator('service_from', mode='before')
+    @classmethod
+    def parse_service_from(cls, value):
+        if isinstance(value, list) and len(value) == 3:
+            return date(value[0], value[1], value[2])
+        if isinstance(value, (date, datetime)):
+            return value.date() if isinstance(value, datetime) else value
+        if isinstance(value, str):
+            return datetime.fromisoformat(value).date()
+        return value
+
+    @field_validator('service_to', mode='before')
+    @classmethod
+    def parse_service_to(cls, value):
+        if value is None:
+            return None
+        if isinstance(value, list) and len(value) == 3:
+            return date(value[0], value[1], value[2])
+        if isinstance(value, (date, datetime)):
+            return value.date() if isinstance(value, datetime) else value
+        if isinstance(value, str):
+            return datetime.fromisoformat(value).date()
+        return value
 
 

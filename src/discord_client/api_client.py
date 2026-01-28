@@ -27,11 +27,11 @@ from urllib.parse import quote
 from typing import Tuple, Optional, List, Dict, Union
 from pydantic import SecretStr
 
-from src.discord_client.configuration import Configuration
-from src.discord_client.api_response import ApiResponse, T as ApiResponseT
-import src.discord_client.models
-from src.discord_client import rest
-from src.discord_client.exceptions import (
+from discord_client.configuration import Configuration
+from discord_client.api_response import ApiResponse, T as ApiResponseT
+import discord_client.models
+from discord_client import rest
+from discord_client.exceptions import (
     ApiValueError,
     ApiException,
     BadRequestException,
