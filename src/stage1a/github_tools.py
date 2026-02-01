@@ -1,7 +1,7 @@
 import os
 from datetime import date
 from enum import Enum
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List
 
 from pydantic import Field, BaseModel
 
@@ -12,6 +12,7 @@ from src.github_client.api.repos_api import ReposApi
 from src.github_client.api_client import ApiClient
 from src.github_client.configuration import Configuration
 from src.github_client.models import issues_create_request
+from src.github_client.models.issues_create_request_title import IssuesCreateRequestTitle
 
 pat = os.environ.get("GITHUB_PAT")
 if not pat:
@@ -109,8 +110,25 @@ async def issues_list_for_repo(owner: Annotated[str, Field(description="The acco
     issues = await issuesApi.issues_list_for_repo(owner=owner, repo=repo, milestone=milestone, state=state.value, assignee=assignee, type=issue_type, creator=creator, mentioned=mentioned, labels=labels, sort=sort.value, direction=direction.value, since=since, per_page=per_page, page=page)
     return issues
 
+
+class Label(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = None
+
+
+class CreateIssueRequest(BaseModel):
+    title: Annotated[str | int, Field(description="The title of the issue.")]
+    body: Annotated[Optional[str], Field(description="The contents of the issue.")] = ""
+    assignee: Annotated[Optional[str], Field(description="Login for the user that this issue should be assigned to. _NOTE: Only users with push access can set the assignee for new issues. The assignee is silently dropped otherwise. **This field is closing down.**_")] = None
+    milestone: Annotated[Optional[int], Field(description="The `number` of the milestone to associate this issue with. _NOTE: Only users with push access can set the milestone for new issues. The milestone is silently dropped otherwise._")] = None
+    labels: Annotated[Optional[List[str | Label]], Field(description="Labels to associate with this issue. _NOTE: Only users with push access can set labels for new issues. Labels are silently dropped otherwise._")] = None
+    assignees: Annotated[Optional[List[str]], Field(description="Logins for Users to assign to this issue. _NOTE: Only users with push access can set assignees for new issues. Assignees are silently dropped otherwise._")] = []
+    issue_type: Annotated[Optional[str], Field(description="The name of the issue type to associate with this issue. _NOTE: Only users with push access can set the type for new issues. The type is silently dropped otherwise._")] = None
+
 @mcp.tool()
-async def issues_create(owner: Annotated[str, Field(description="The account owner of the repository. The name is not case sensitive.")], repo: Annotated[str, Field(description="The name of the repository without the `.git` extension. The name is not case sensitive.")]):
+async def issues_create(owner: Annotated[str, Field(description="The account owner of the repository. The name is not case sensitive.")], repo: Annotated[str, Field(description="The name of the repository without the `.git` extension. The name is not case sensitive.")], issue: CreateIssueRequest):
     """
     Any user with pull access to a repository can create an issue. If [issues are disabled in the repository](https://docs.github.com/articles/disabling-issues/), the API returns a `410 Gone` status.
 
@@ -124,7 +142,15 @@ async def issues_create(owner: Annotated[str, Field(description="The account own
         - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
         - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
     """
-    created_issue = await issuesApi.issues_create(owner=owner, repo=repo, issues_create_request=issues_create_request)
+    create_issue_request = {
+        "title": {"actual_instance": issue.title},
+        "body": issue.body,
+        "milestone": issue.milestone,
+        "labels": issue.labels,
+        "assignees": issue.assignees,
+        "type": issue.issue_type
+    }
+    created_issue = await issuesApi.issues_create(owner=owner, repo=repo, issues_create_request=create_issue_request)
     return created_issue
 
 @mcp.tool()

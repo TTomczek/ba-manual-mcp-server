@@ -84,7 +84,7 @@ async def list_messages(channel_id: Annotated[str, Field(pattern=snowflake_patte
 
 @mcp.tool()
 async def create_thread(channel_id: Annotated[str, Field(pattern=snowflake_pattern)], thread: CreateForumThreadRequest | CreateTextThreadWithoutMessageRequest):
-    thread = await api.create_thread(channel_id=channel_id, create_thread_request=CreateThreadRequest(actual_instance=thread))
+    thread = await api.create_thread(channel_id=channel_id, create_thread_request={"actual_instance": thread})
     return thread
 
 @mcp.tool()
